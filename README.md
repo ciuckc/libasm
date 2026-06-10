@@ -1,19 +1,26 @@
 # libasm
 
+This README is mainly for myself for learning purposes. The main project will
+implement a couple of `stdlib` and `string` header functions in assembly.
+
+Will use x86 Intel synthax assembly.
+
 <!--toc:start-->
 - [libasm](#libasm)
   - [Program structure](#program-structure)
-  - [Instruction format](#instruction-format)
+  - [Sections](#sections)
   - [Entry point](#entry-point)
   - [Labels](#labels)
+  - [Memory size specifiers](#memory-size-specifiers)
+  - [Instruction format](#instruction-format)
   - [Registers (x86-64)](#registers-x86-64)
+    - [Function calling convention (System V AMD64 ABI)](#function-calling-convention-system-v-amd64-abi)
   - [Syscalls (Linux x86-64)](#syscalls-linux-x86-64)
   - [syscall vs int 0x80](#syscall-vs-int-0x80)
+  - [LEA and label addresses](#lea-and-label-addresses)
   - [XOR zero idiom](#xor-zero-idiom)
   - [Build and run](#build-and-run)
 <!--toc:end-->
-
-Learning x86-64 assembly (Intel syntax, NASM).
 
 ## Program structure
 
@@ -29,53 +36,54 @@ message:
     db "Hello, world", 10   ; db = define bytes, 10 = newline '\n'
 ```
 
-## Instruction format
+## Sections
 
-` operation [destination, source] `
-
-The destination is always on the left, source on the right:
-
-```asm
-mov rax, 123     ; rax = 123
-mov rax, rbx     ; rax = rbx
-add rbx, 42      ; rbx = rbx + 42
-sub rax, rcx     ; rax = rax - rcx
-imul rax, rbx    ; rax = rax * rbx
-xor rdi, rdi     ; rdi = 0
-```
-
-Both operands cannot be memory addresses at the same time.
-At least one must be a register.
-
-`mul` and `div` are exceptions. They only take one operand and
-implicitly use `rax` and `rdx`:
+| Section | Purpose |
+| --------- | --------- |
+| `.text` | executable code |
+| `.data` | initialized mutable data |
+| `.rodata` | read-only data (string literals, constants) |
+| `.bss` | uninitialized data, zero-filled at load time, costs nothing in the binary |
 
 ```asm
-; mul (unsigned multiply)
-mul rbx        ; rdx:rax = rax * rbx
-               ; result split: high bits in rdx, low bits in rax
+section .rodata
+message:
+    db "Hello, world", 0x0A   ; read-only: OS will segfault on accidental write
 
-; div (unsigned divide)
-xor rdx, rdx   ; must clear rdx before dividing
-mov rax, 100
-mov rbx, 7
-div rbx        ; rax = 14 (quotient), rdx = 2 (remainder)
+section .data
+counter:
+    dq 0                       ; mutable 64-bit value
+
+section .bss
+buffer resb 64                 ; reserve 64 bytes, no space used in binary
 ```
 
-`imul` and `idiv` are the signed versions.
+Use `.rodata` for string literals instead of `.data`. It is more correct and
+the OS enforces the read-only protection.
 
 ## Entry point
 
-The `global` keyword is used to define the entry point of the program. This
-defines an identifier which makes it available to the linker. Then under this
-label the processor will start executing the code.
+`global` exports a label to the linker, making it visible to other object files.
+Without it, the label is local to the current file.
 
 ```asm
-global _start
+global _start          ; entry point for a standalone binary
+global ft_hello_world  ; export a function so C code can call it
+global ft_strlen, ft_strcpy  ; multiple on one line
+```
 
-_start:
-.....
+For a standalone binary, `_start` is the conventional name the linker looks for
+as the entry point. When writing functions called from C, you do not need
+`_start` since gcc provides its own entry point.
 
+```asm
+global ft_hello_world
+
+section .text
+
+ft_hello_world:
+    ; ...
+    ret
 ```
 
 ## Labels
@@ -130,6 +138,60 @@ len equ $ - message   ; $ = address after the 13 bytes, so len = 13
 
 `$$` means "the start of the current section."
 
+## Memory size specifiers
+
+When reading or writing memory, NASM needs to know how many bytes to access:
+
+| Specifier | Size |
+|-----------|------|
+| `byte` | 1 byte |
+| `word` | 2 bytes |
+| `dword` | 4 bytes |
+| `qword` | 8 bytes |
+
+```asm
+mov byte  [rbp - 1], 0    ; write 1 byte
+mov dword [rbp - 4], 0    ; write 4 bytes (matches 32-bit registers like eax)
+mov qword [rbp - 8], 0    ; write 8 bytes (matches 64-bit registers like rax)
+```
+
+Required any time the operand size cannot be inferred from a register.
+
+## Instruction format
+
+` operation [destination, source] `
+
+The destination is always on the left, source on the right:
+
+```asm
+mov rax, 123     ; rax = 123
+mov rax, rbx     ; rax = rbx
+add rbx, 42      ; rbx = rbx + 42
+sub rax, rcx     ; rax = rax - rcx
+imul rax, rbx    ; rax = rax * rbx
+xor rdi, rdi     ; rdi = 0
+```
+
+Both operands cannot be memory addresses at the same time.
+At least one must be a register.
+
+`mul` and `div` are exceptions. They only take one operand and
+implicitly use `rax` and `rdx`:
+
+```asm
+; mul (unsigned multiply)
+mul rbx        ; rdx:rax = rax * rbx
+               ; result split: high bits in rdx, low bits in rax
+
+; div (unsigned divide)
+xor rdx, rdx   ; must clear rdx before dividing
+mov rax, 100
+mov rbx, 7
+div rbx        ; rax = 14 (quotient), rdx = 2 (remainder)
+```
+
+`imul` and `idiv` are the signed versions.
+
 ## Registers (x86-64)
 
 64-bit general-purpose registers used for syscall arguments:
@@ -140,6 +202,31 @@ len equ $ - message   ; $ = address after the 13 bytes, so len = 13
 | `rdi`    | 1st argument    |
 | `rsi`    | 2nd argument    |
 | `rdx`    | 3rd argument    |
+
+### Function calling convention (System V AMD64 ABI)
+
+Registers used when calling or implementing a C function:
+
+| Register | Role |
+| ---------- | ------ |
+| `rdi` | 1st argument |
+| `rsi` | 2nd argument |
+| `rdx` | 3rd argument |
+| `rcx` | 4th argument |
+| `r8` | 5th argument |
+| `r9` | 6th argument |
+| `rax` | return value |
+
+Arguments beyond 6 are pushed onto the stack. The 4th argument uses `rcx`
+instead of `r10` (which is what syscall uses).
+
+Caller-saved registers: `rax`, `rcx`, `rdx`, `rsi`, `rdi`, `r8`, `r9`, `r10`,
+`r11`. If a caller is using these, it must save them otherwise they might be
+overwritten.
+
+Callee-saved registers: `rbx`, `rbp`, `r12`, `r13`, `r14`, `r15`. If a
+callee(function) is using these, then it must make sure they are preserved on
+the stack and restored.
 
 ## Syscalls (Linux x86-64)
 
@@ -172,9 +259,31 @@ Two ways to invoke the kernel on Linux:
 | Syscall numbers | 64-bit table | 32-bit table (different numbers) |
 | Speed | fast | slower (triggers interrupt handler) |
 
-`int 0x80` works in 64-bit mode but truncates addresses to 32 bits — it will
+`int 0x80` works in 64-bit mode but truncates addresses to 32 bits. It will
 break if your data lives above the 4GB boundary. Always use `syscall` for
 64-bit code.
+
+## LEA and label addresses
+
+`lea` (Load Effective Address) loads an address into a register without reading
+from memory. It is the way to get a label's address in a PIE binary.
+
+```asm
+mov rsi, hello_world       ; absolute address, breaks in PIE
+mov rsi, [hello_world]     ; reads bytes at that address (dereference)
+lea rsi, [rel hello_world] ; loads the address, RIP-relative, works in PIE
+```
+
+The `[]` brackets with `lea` are required syntax but do not cause a memory
+read. `lea` only computes the address inside the brackets.
+
+`rel` tells NASM to encode the address as an offset from the current
+instruction pointer (RIP) rather than an absolute address. Since the offset
+between the instruction and the label is fixed at assemble time, it stays
+correct regardless of where the OS loads the binary.
+
+gcc builds PIE by default. Always use `lea` with `rel` when loading label
+addresses.
 
 ## XOR zero idiom
 
