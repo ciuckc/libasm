@@ -1,5 +1,8 @@
-extern void ft_hello_world(void);
+#include <stddef.h>
+#include <stdio.h>
+
+extern size_t ft_strlen(const char* str);
 
 int main() {
-    ft_hello_world();
+    printf("%zu", ft_strlen("Hello, world!"));
 }

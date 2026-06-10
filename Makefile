@@ -12,7 +12,7 @@ SRC_DIR = src
 
 C_SRC = main.c
 
-S_SRC = ft_hello_world.s
+S_SRC = ft_hello_world.s ft_strlen.s
 
 OBJ_DIR = obj
 
