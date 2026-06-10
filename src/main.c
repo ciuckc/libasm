@@ -5,13 +5,13 @@
 
 extern size_t ft_strlen(const char* str);
 
-static void test_ft_strlen(void)
-{
+static void test_ft_strlen(void) {
     assert(ft_strlen("Hello, world!") == strlen("Hello, world!"));
-    assert(ft_strlen("") == 0);
-    assert(ft_strlen("a") == 1);
-    assert(ft_strlen("abc") == 3);
-    printf("ft_strlen: OK\n");
+    assert(ft_strlen("") == strlen(""));
+    assert(ft_strlen("a") == strlen("a"));
+    assert(ft_strlen("abc") == strlen("abc"));
+    assert(ft_strlen("\0\0\0\0") == strlen("\0\0\0\0\0"));
+    printf("ft_strlen GOOD\n");
 }
 
 int main(void)
