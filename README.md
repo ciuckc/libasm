@@ -20,7 +20,6 @@ Will use x86 Intel synthax assembly.
   - [LEA and label addresses](#lea-and-label-addresses)
   - [XOR zero idiom](#xor-zero-idiom)
   - [Sign and zero extension](#sign-and-zero-extension)
-  - [Build and run](#build-and-run)
 <!--toc:end-->
 
 ## Program structure
@@ -353,10 +352,4 @@ For a return value this means the caller reads garbage in the upper bits.
 sub al, [rsi + r8]
 movsx rax, al     ; sign-extend so -25 stays -25, not 231
 ret
-```
-
-```bash
-nasm -f elf64 hello_world.s -o hello_world.o
-ld hello_world.o -o a.out
-./a.out
 ```
