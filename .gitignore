@@ -1,2 +1,5 @@
 *.o
 a.out
+obj
+libasm.a
+libasm

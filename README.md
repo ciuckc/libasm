@@ -108,6 +108,28 @@ done:
     ; execution continues here
 ```
 
+A label starting with `.` is local to the nearest non-dot label above it.
+This scopes it to the current function and prevents name clashes across functions:
+
+```asm
+ft_strlen:
+    xor rax, rax
+
+.loop:
+    cmp byte [rdi + rax], 0
+    je  .done
+    inc rax
+    jmp .loop
+
+.done:
+    ret
+
+ft_strcpy:
+    ; .loop and .done here are separate from ft_strlen's
+.loop:
+    ; ...
+```
+
 `_start` itself is just a label. It marks the address where execution begins.
 
 Labels use a colon and point to a memory location:
