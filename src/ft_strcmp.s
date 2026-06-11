@@ -19,7 +19,7 @@ ft_strcmp:
     jmp .loop
 .done:
     sub al, [rsi] ; substract the value of s2 from s1
-    movsx rax, al ; then we move the signed value into rax to extend the sign
+    movsx rax, al ; then we extended the signed value into rax
     mov rsp, rbp ; restore the base pointer
     pop rbp
     ret
