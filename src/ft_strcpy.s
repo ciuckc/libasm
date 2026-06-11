@@ -3,8 +3,6 @@ global ft_strcpy
 section .text
 
 ft_strcpy:
-    push rbp ; save the previous base pointer
-    mov rbp, rsp ; set the next base pointer
     push rbx ; save the rbx because we ll use it
     xor rbx, rbx ; zero out the rbx register, this will be our index
 .loop:
@@ -16,8 +14,6 @@ ft_strcpy:
     jmp .loop
 .done:
     pop rbx ; reset rbx
-    mov rsp, rbp ; reset back the stack pointer
-    pop rbp ; reset the base pointer
     mov rax, rdi
     ret
 

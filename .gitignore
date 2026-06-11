@@ -3,3 +3,5 @@ a.out
 obj
 libasm.a
 libasm
+compile_commands.json
+

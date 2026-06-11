@@ -3,8 +3,6 @@ global ft_strcmp
 section .text
 
 ft_strcmp:
-    push rbp
-    mov rbp, rsp
     xor rax, rax
 .loop:
     mov byte al, [rdi] ; put curr s1 byte into lower byte register al (rax)
@@ -20,6 +18,4 @@ ft_strcmp:
 .done:
     sub al, [rsi] ; substract the value of s2 from s1
     movsx rax, al ; then we extended the signed value into rax
-    mov rsp, rbp ; restore the base pointer
-    pop rbp
     ret
