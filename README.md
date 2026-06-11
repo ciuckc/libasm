@@ -19,6 +19,7 @@ Will use x86 Intel synthax assembly.
   - [syscall vs int 0x80](#syscall-vs-int-0x80)
   - [LEA and label addresses](#lea-and-label-addresses)
   - [XOR zero idiom](#xor-zero-idiom)
+  - [Sign and zero extension](#sign-and-zero-extension)
   - [Build and run](#build-and-run)
 <!--toc:end-->
 
@@ -194,8 +195,16 @@ imul rax, rbx    ; rax = rax * rbx
 xor rdi, rdi     ; rdi = 0
 ```
 
-Both operands cannot be memory addresses at the same time.
-At least one must be a register.
+No x86 instruction accepts two memory operands. At least one must be a register:
+
+| Operands | Allowed |
+|----------|---------|
+| `<reg>, <imm>` | yes |
+| `<mem>, <imm>` | yes |
+| `<reg>, <reg>` | yes |
+| `<reg>, <mem>` | yes |
+| `<mem>, <reg>` | yes |
+| `<mem>, <mem>` | no |
 
 `mul` and `div` are exceptions. They only take one operand and
 implicitly use `rax` and `rdx`:
@@ -320,7 +329,31 @@ mov rdi, 0     ; equivalent: 7 bytes
 Further reading:
 [Why do x86 compilers use `xor eax, eax` instead of `mov eax, 0`?](https://devblogs.microsoft.com/oldnewthing/20260421-00/?p=112247)
 
-## Build and run
+## Sign and zero extension
+
+When widening a value from a smaller register to a larger one, the upper bits
+must be filled explicitly. There are two ways depending on whether the value is signed:
+
+| Instruction | Fills upper bits with |
+|-------------|----------------------|
+| `movsx` | sign bit (bit 7/15/31) |
+| `movzx` | zeros |
+
+```asm
+; al = 0xE7 (-25 signed, 231 unsigned)
+movsx rax, al    ; rax = 0xFFFFFFFFFFFFFFE7 (-25)
+movzx rax, al    ; rax = 0x00000000000000E7 (231)
+```
+
+Without extension, the upper bytes of `rax` are whatever was there before.
+For a return value this means the caller reads garbage in the upper bits.
+
+```asm
+; strcmp: subtract two bytes and return signed difference
+sub al, [rsi + r8]
+movsx rax, al     ; sign-extend so -25 stays -25, not 231
+ret
+```
 
 ```bash
 nasm -f elf64 hello_world.s -o hello_world.o

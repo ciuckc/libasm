@@ -5,6 +5,19 @@
 
 extern size_t ft_strlen(const char* str);
 extern char* ft_strcpy(char* dst, const char* src);
+extern int ft_strcmp(const char* s1, const char* s2);
+
+static void test_ft_strcmp(void) {
+    assert(ft_strcmp("", "") == 0);
+    assert(ft_strcmp("abc", "abc") == 0);
+    assert(ft_strcmp("a", "z") < 0);
+    assert(ft_strcmp("z", "a") > 0);
+    assert(ft_strcmp("abc", "abd") < 0);
+    assert(ft_strcmp("abc", "ab") > 0);
+    assert(ft_strcmp("ab", "abc") < 0);
+    assert(ft_strcmp("ABC", "abc") < 0);
+    printf("ft_strcmp GOOD\n");
+}
 
 static void test_ft_strcpy(void) {
     char buffer[64];
@@ -49,4 +62,5 @@ int main(void)
 {
     test_ft_strlen();
     test_ft_strcpy();
+    test_ft_strcmp();
 }
