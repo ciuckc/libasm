@@ -197,7 +197,7 @@ xor rdi, rdi     ; rdi = 0
 No x86 instruction accepts two memory operands. At least one must be a register:
 
 | Operands | Allowed |
-|----------|---------|
+| ---------- | --------- |
 | `<reg>, <imm>` | yes |
 | `<mem>, <imm>` | yes |
 | `<reg>, <reg>` | yes |
@@ -331,7 +331,8 @@ Further reading:
 ## Sign and zero extension
 
 When widening a value from a smaller register to a larger one, the upper bits
-must be filled explicitly. There are two ways depending on whether the value is signed:
+must be filled explicitly. There are two ways depending on whether the value is
+signed:
 
 | Instruction | Fills upper bits with |
 |-------------|----------------------|
