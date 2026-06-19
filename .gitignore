@@ -2,6 +2,7 @@
 a.out
 obj
 libasm.a
+libasm_test
 libasm
 compile_commands.json
 

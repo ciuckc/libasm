@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -10,6 +11,7 @@ extern char* ft_strcpy(char* dst, const char* src);
 extern int ft_strcmp(const char* s1, const char* s2);
 extern int ft_write(int fd, const void* buf, size_t count);
 extern ssize_t ft_read(int fd, void* buf, size_t count);
+extern char* ft_strdup(const char* str);
 
 static void test_ft_strcmp(void) {
     assert(ft_strcmp("", "") == 0);
@@ -121,6 +123,35 @@ static void test_ft_read(void) {
     printf("ft_read GOOD\n");
 }
 
+static void test_ft_strdup(void) {
+    char *dup;
+
+    dup = ft_strdup("hello");
+    assert(strcmp(dup, "hello") == 0);
+    free(dup);
+
+    dup = ft_strdup("");
+    assert(strcmp(dup, "") == 0);
+    free(dup);
+
+    dup = ft_strdup("a");
+    assert(strcmp(dup, "a") == 0);
+    free(dup);
+
+    dup = ft_strdup("hello\nworld\t!");
+    assert(strcmp(dup, "hello\nworld\t!") == 0);
+    free(dup);
+
+    char *src = ft_strdup("independent copy");
+    dup = ft_strdup(src);
+    assert(dup != src);
+    assert(strcmp(dup, src) == 0);
+    free(src);
+    free(dup);
+
+    printf("ft_strdup GOOD\n");
+}
+
 int main(void)
 {
     test_ft_strlen();
@@ -128,4 +159,5 @@ int main(void)
     test_ft_strcmp();
     test_ft_write();
     test_ft_read();
+    test_ft_strdup();
 }
