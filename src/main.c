@@ -13,7 +13,6 @@ extern int ft_write(int fd, const void* buf, size_t count);
 extern ssize_t ft_read(int fd, void* buf, size_t count);
 extern char* ft_strdup(const char* str);
 
-#define BONUS
 
 #ifdef BONUS
 
@@ -24,6 +23,7 @@ typedef struct s_list {
 
 extern int ft_atoi_base(const char* arg, const char* base);
 extern void ft_list_push_front(t_list **list, void *data);
+extern int ft_list_size(t_list *list);
 
 static t_list *new_node(void *data, t_list *next)
 {
@@ -138,6 +138,35 @@ static void test_ft_list_push_front(void) {
     free_list(list);
 
     printf("ft_list_push_front GOOD\n");
+}
+
+static void test_ft_list_size(void) {
+    t_list *list;
+    int a = 1;
+    int b = 2;
+    int c = 3;
+
+    // empty list
+    assert(ft_list_size(NULL) == 0);
+
+    // single node
+    list = new_node(&a, NULL);
+    assert(ft_list_size(list) == 1);
+    free_list(list);
+
+    // multiple nodes
+    list = new_node(&a, new_node(&b, new_node(&c, NULL)));
+    assert(ft_list_size(list) == 3);
+    free_list(list);
+
+    // size matches after push_front
+    list = NULL;
+    ft_list_push_front(&list, &a);
+    ft_list_push_front(&list, &b);
+    assert(ft_list_size(list) == 2);
+    free_list(list);
+
+    printf("ft_list_size GOOD\n");
 }
 #endif
 
@@ -294,5 +323,6 @@ int main(void)
     printf("-----------\n");
     test_ft_atoi_base();
     test_ft_list_push_front();
+    test_ft_list_size();
 #endif
 }
