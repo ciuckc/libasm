@@ -10,7 +10,7 @@ ft_list_push_front: ; (t_list **begin_list = rdi, void* data = rsi)
     test rdi, rdi
     jz .done ; if list is null return
     mov rdi, 0x10 ; sizeof(t_list) == 16
-    call malloc
+    call malloc wrt ..plt
     test rax, rax
     jz .done ; if nullptr, we are done
     pop rdi ; get back the begin_list ptr
