@@ -20,7 +20,7 @@ C_SRC = $(SRC_DIR)/main.c
 
 S_SRC = ft_strlen.s ft_strcpy.s ft_strcmp.s ft_write.s ft_read.s ft_strdup.s
 
-BONUS_SRC = ft_atoi_base_bonus.s ft_list_push_front_bonus.s
+BONUS_SRC = ft_atoi_base_bonus.s ft_list_push_front_bonus.s ft_list_size_bonus.s
 
 OBJ_DIR = obj
 
