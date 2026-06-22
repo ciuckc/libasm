@@ -13,6 +13,55 @@ extern int ft_write(int fd, const void* buf, size_t count);
 extern ssize_t ft_read(int fd, void* buf, size_t count);
 extern char* ft_strdup(const char* str);
 
+#ifdef BONUS
+extern int ft_atoi_base(const char* arg, const char* base);
+
+static void test_ft_atoi_base(void) {
+    // basic decimal
+    assert(ft_atoi_base("42", "0123456789") == 42);
+    assert(ft_atoi_base("0", "0123456789") == 0);
+    assert(ft_atoi_base("1000", "0123456789") == 1000);
+    assert(ft_atoi_base("007", "0123456789") == 7);
+
+    // signs
+    assert(ft_atoi_base("-42", "0123456789") == -42);
+    assert(ft_atoi_base("+42", "0123456789") == 42);
+    assert(ft_atoi_base("-0", "0123456789") == 0);
+
+    // sign with no digits after
+    assert(ft_atoi_base("+", "0123456789") == 0);
+    assert(ft_atoi_base("-", "0123456789") == 0);
+
+    // whitespace
+    assert(ft_atoi_base("  42", "0123456789") == 42);
+    assert(ft_atoi_base("   42", "0123456789") == 42);
+    assert(ft_atoi_base("\t42", "0123456789") == 42);
+    assert(ft_atoi_base("\n42", "0123456789") == 42);
+    assert(ft_atoi_base("\t \r\n  42", "0123456789") == 42);
+    assert(ft_atoi_base("  -42", "0123456789") == -42);
+    assert(ft_atoi_base("  +42", "0123456789") == 42);
+
+    // stops at char not in base
+    assert(ft_atoi_base("12x34", "0123456789") == 12);
+    assert(ft_atoi_base("42abc", "0123456789") == 42);
+
+    // empty input
+    assert(ft_atoi_base("", "0123456789") == 0);
+
+    // other bases
+    assert(ft_atoi_base("101010", "01") == 42);
+    assert(ft_atoi_base("2a", "0123456789abcdef") == 42);
+    assert(ft_atoi_base("ff", "0123456789abcdef") == 255);
+    assert(ft_atoi_base("2A", "0123456789ABCDEF") == 42);
+
+    // invalid base (len <= 1)
+    assert(ft_atoi_base("42", "0") == 0);
+    assert(ft_atoi_base("42", "") == 0);
+
+    printf("ft_atoi_base GOOD\n");
+}
+#endif
+
 static void test_ft_strcmp(void) {
     assert(ft_strcmp("", "") == 0);
     assert(ft_strcmp("abc", "abc") == 0);
@@ -160,4 +209,10 @@ int main(void)
     test_ft_write();
     test_ft_read();
     test_ft_strdup();
+#ifdef BONUS
+    printf("-----------\n");
+    printf("BONUS SIDE\n");
+    printf("-----------\n");
+    test_ft_atoi_base();
+#endif
 }

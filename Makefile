@@ -20,9 +20,13 @@ C_SRC = $(SRC_DIR)/main.c
 
 S_SRC = ft_strlen.s ft_strcpy.s ft_strcmp.s ft_write.s ft_read.s ft_strdup.s
 
+BONUS_SRC = ft_atoi_base_bonus.s
+
 OBJ_DIR = obj
 
 OBJ = $(addprefix $(OBJ_DIR)/, $(S_SRC:.s=.o))
+
+BONUS_OBJ = $(addprefix $(OBJ_DIR)/, $(BONUS_SRC:.s=.o))
 
 all: $(NAME)
 
@@ -40,6 +44,12 @@ $(OBJ_DIR):
 
 test: all
 	$(CC) $(CFLAGS) $(C_SRC) $(NAME) -o $(TEST_NAME)
+	./$(TEST_NAME)
+
+bonus: $(NAME) $(BONUS_OBJ)
+	$(AR) $(AR_FLAGS) $(NAME) $(BONUS_OBJ)
+	$(CC) $(CFLAGS) -DBONUS $(C_SRC) $(NAME) -o $(TEST_NAME)
+	./$(TEST_NAME)
 
 clean:
 	rm -rf $(OBJ_DIR)
@@ -51,4 +61,4 @@ fclean: clean
 re: fclean
 	$(MAKE)
 
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re test bonus
