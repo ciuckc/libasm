@@ -13,8 +13,41 @@ extern int ft_write(int fd, const void* buf, size_t count);
 extern ssize_t ft_read(int fd, void* buf, size_t count);
 extern char* ft_strdup(const char* str);
 
+#define BONUS
+
 #ifdef BONUS
+
+typedef struct s_list {
+    void* data;
+    struct s_list* next;
+} t_list;
+
 extern int ft_atoi_base(const char* arg, const char* base);
+extern void ft_list_push_front(t_list **list, void *data);
+
+static t_list *new_node(void *data, t_list *next)
+{
+    t_list *node = malloc(sizeof(t_list));
+    node->data = data;
+    node->next = next;
+    return node;
+}
+
+static void free_list(t_list *list)
+{
+    while (list) {
+        t_list *next = list->next;
+        free(list);
+        list = next;
+    }
+}
+
+static int list_len(t_list *list)
+{
+    int i = 0;
+    while (list) { list = list->next; i++; }
+    return i;
+}
 
 static void test_ft_atoi_base(void) {
     // basic decimal
@@ -59,6 +92,52 @@ static void test_ft_atoi_base(void) {
     assert(ft_atoi_base("42", "") == 0);
 
     printf("ft_atoi_base GOOD\n");
+}
+
+static void test_ft_list_push_front(void) {
+    t_list *list;
+    int a = 1;
+    int b = 2;
+    int c = 3;
+
+    // push onto NULL list
+    list = NULL;
+    ft_list_push_front(&list, &a);
+    assert(list != NULL);
+    assert(list->data == &a);
+    assert(list->next == NULL);
+    assert(list_len(list) == 1);
+    free_list(list);
+
+    // push onto existing list
+    list = new_node(&b, new_node(&c, NULL));
+    ft_list_push_front(&list, &a);
+    assert(list->data == &a);
+    assert(list->next->data == &b);
+    assert(list->next->next->data == &c);
+    assert(list_len(list) == 3);
+    free_list(list);
+
+    // multiple pushes build list in reverse order
+    list = NULL;
+    ft_list_push_front(&list, &c);
+    ft_list_push_front(&list, &b);
+    ft_list_push_front(&list, &a);
+    assert(list->data == &a);
+    assert(list->next->data == &b);
+    assert(list->next->next->data == &c);
+    assert(list_len(list) == 3);
+    free_list(list);
+
+    // push NULL data
+    list = NULL;
+    ft_list_push_front(&list, NULL);
+    assert(list != NULL);
+    assert(list->data == NULL);
+    assert(list_len(list) == 1);
+    free_list(list);
+
+    printf("ft_list_push_front GOOD\n");
 }
 #endif
 
@@ -214,5 +293,6 @@ int main(void)
     printf("BONUS SIDE\n");
     printf("-----------\n");
     test_ft_atoi_base();
+    test_ft_list_push_front();
 #endif
 }
