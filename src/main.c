@@ -13,7 +13,6 @@ extern int ft_write(int fd, const void* buf, size_t count);
 extern ssize_t ft_read(int fd, void* buf, size_t count);
 extern char* ft_strdup(const char* str);
 
-
 #ifdef BONUS
 
 typedef struct s_list {
@@ -27,10 +26,16 @@ extern int ft_list_size(t_list *list);
 extern void ft_list_sort(t_list **begin_list, int (*cmp)(void*, void*));
 extern void ft_list_remove_if(t_list **begin_list, void *data_ref, int (*cmp)(void*, void*), void (*free_func)(void*));
 
-static void noop_free(void *ptr) { (void)ptr; }
+static void noop_free(void *ptr) {
+    (void)ptr;
+}
 
 static int free_call_count;
-static void counting_free(void *ptr) { (void)ptr; free_call_count++; }
+
+static void counting_free(void *ptr) {
+    (void)ptr;
+    free_call_count++;
+}
 
 static t_list *new_node(void *data, t_list *next)
 {
@@ -189,15 +194,15 @@ static int is_sorted(t_list *list)
 static void test_ft_list_sort(void) {
     t_list *list;
 
-    // NULL list — no crash
+    // NULL list no crash
     ft_list_sort(NULL, (int (*)(void*, void*))ft_strcmp);
 
-    // empty list — no crash
+    // empty list no crash
     list = NULL;
     ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
     assert(list == NULL);
 
-    // single element — unchanged
+    // single element unchanged
     list = new_node("a", NULL);
     ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
     assert(strcmp(list->data, "a") == 0);
@@ -245,15 +250,15 @@ static void test_ft_list_sort(void) {
 static void test_ft_list_remove_if(void) {
     t_list *list;
 
-    // NULL list — no crash
+    // NULL list no crash
     ft_list_remove_if(NULL, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
 
-    // empty list — no crash
+    // empty list no crash
     list = NULL;
     ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
     assert(list == NULL);
 
-    // no match — list unchanged
+    // no match list unchanged
     list = new_node("a", new_node("b", new_node("c", NULL)));
     ft_list_remove_if(&list, "z", (int (*)(void*, void*))ft_strcmp, noop_free);
     assert(list_len(list) == 3);
