@@ -5,10 +5,10 @@ extern malloc
 section .text
 
 ft_list_push_front: ; (t_list **begin_list = rdi, void* data = rsi)
-    push rsi
-    push rdi
     test rdi, rdi
     jz .done ; if list is null return
+    push rsi
+    push rdi
     mov rdi, 0x10 ; sizeof(t_list) == 16
     call malloc wrt ..plt
     test rax, rax
