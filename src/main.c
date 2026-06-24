@@ -25,6 +25,12 @@ extern int ft_atoi_base(const char* arg, const char* base);
 extern void ft_list_push_front(t_list **list, void *data);
 extern int ft_list_size(t_list *list);
 extern void ft_list_sort(t_list **begin_list, int (*cmp)(void*, void*));
+extern void ft_list_remove_if(t_list **begin_list, void *data_ref, int (*cmp)(void*, void*), void (*free_func)(void*));
+
+static void noop_free(void *ptr) { (void)ptr; }
+
+static int free_call_count;
+static void counting_free(void *ptr) { (void)ptr; free_call_count++; }
 
 static t_list *new_node(void *data, t_list *next)
 {
@@ -235,6 +241,91 @@ static void test_ft_list_sort(void) {
 
     printf("ft_list_sort GOOD\n");
 }
+
+static void test_ft_list_remove_if(void) {
+    t_list *list;
+
+    // NULL list — no crash
+    ft_list_remove_if(NULL, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+
+    // empty list — no crash
+    list = NULL;
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list == NULL);
+
+    // no match — list unchanged
+    list = new_node("a", new_node("b", new_node("c", NULL)));
+    ft_list_remove_if(&list, "z", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 3);
+    assert(strcmp(list->data, "a") == 0);
+    free_list(list);
+
+    // remove head
+    list = new_node("a", new_node("b", new_node("c", NULL)));
+    ft_list_remove_if(&list, "a", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 2);
+    assert(strcmp(list->data, "b") == 0);
+    free_list(list);
+
+    // remove tail
+    list = new_node("a", new_node("b", new_node("c", NULL)));
+    ft_list_remove_if(&list, "c", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 2);
+    assert(strcmp(list->data, "a") == 0);
+    assert(strcmp(list->next->data, "b") == 0);
+    free_list(list);
+
+    // remove middle
+    list = new_node("a", new_node("b", new_node("c", NULL)));
+    ft_list_remove_if(&list, "b", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 2);
+    assert(strcmp(list->data, "a") == 0);
+    assert(strcmp(list->next->data, "c") == 0);
+    free_list(list);
+
+    // remove all
+    list = new_node("x", new_node("x", new_node("x", NULL)));
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list == NULL);
+
+    // remove consecutive matches at head
+    list = new_node("x", new_node("x", new_node("a", NULL)));
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 1);
+    assert(strcmp(list->data, "a") == 0);
+    free_list(list);
+
+    // remove consecutive matches in middle
+    list = new_node("a", new_node("x", new_node("x", new_node("b", NULL))));
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 2);
+    assert(strcmp(list->data, "a") == 0);
+    assert(strcmp(list->next->data, "b") == 0);
+    free_list(list);
+
+    // single element that matches
+    list = new_node("x", NULL);
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list == NULL);
+
+    // single element that doesn't match
+    list = new_node("a", NULL);
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, noop_free);
+    assert(list_len(list) == 1);
+    assert(strcmp(list->data, "a") == 0);
+    free_list(list);
+
+    // free_func is called once per removed node
+    free_call_count = 0;
+    list = new_node("x", new_node("a", new_node("x", NULL)));
+    ft_list_remove_if(&list, "x", (int (*)(void*, void*))ft_strcmp, counting_free);
+    assert(free_call_count == 2);
+    assert(list_len(list) == 1);
+    assert(strcmp(list->data, "a") == 0);
+    free_list(list);
+
+    printf("ft_list_remove_if GOOD\n");
+}
 #endif
 
 static void test_ft_strcmp(void) {
@@ -392,5 +483,6 @@ int main(void)
     test_ft_list_push_front();
     test_ft_list_size();
     test_ft_list_sort();
+    test_ft_list_remove_if();
 #endif
 }
