@@ -5,6 +5,7 @@ section .text
 ; we should skip spaces first
 ; check if we have a sign or not. There should be at most one sign or none
 ft_atoi_base: ; (rdi = const char* arg, rsi = const char* base)
+    push rbx
     push rdi
     mov rdi, rsi
     mov rcx, 1 ; rcx will be our sign
@@ -46,6 +47,7 @@ ft_atoi_base: ; (rdi = const char* arg, rsi = const char* base)
     jmp .loop_numbers
 .done:
     imul rax, rcx ; multiply value with sign
+    pop rbx
     ret
 
 ft_strlen:
