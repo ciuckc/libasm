@@ -24,6 +24,7 @@ typedef struct s_list {
 extern int ft_atoi_base(const char* arg, const char* base);
 extern void ft_list_push_front(t_list **list, void *data);
 extern int ft_list_size(t_list *list);
+extern void ft_list_sort(t_list **begin_list, int (*cmp)(void*, void*));
 
 static t_list *new_node(void *data, t_list *next)
 {
@@ -167,6 +168,72 @@ static void test_ft_list_size(void) {
     free_list(list);
 
     printf("ft_list_size GOOD\n");
+}
+
+static int is_sorted(t_list *list)
+{
+    while (list && list->next) {
+        if (ft_strcmp(list->data, list->next->data) > 0)
+            return 0;
+        list = list->next;
+    }
+    return 1;
+}
+
+static void test_ft_list_sort(void) {
+    t_list *list;
+
+    // NULL list — no crash
+    ft_list_sort(NULL, (int (*)(void*, void*))ft_strcmp);
+
+    // empty list — no crash
+    list = NULL;
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(list == NULL);
+
+    // single element — unchanged
+    list = new_node("a", NULL);
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(strcmp(list->data, "a") == 0);
+    free_list(list);
+
+    // already sorted
+    list = new_node("apple", new_node("banana", new_node("cherry", NULL)));
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(is_sorted(list));
+    assert(list_len(list) == 3);
+    free_list(list);
+
+    // reverse sorted
+    list = new_node("cherry", new_node("banana", new_node("apple", NULL)));
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(is_sorted(list));
+    assert(strcmp(list->data, "apple") == 0);
+    assert(list_len(list) == 3);
+    free_list(list);
+
+    // random order
+    list = new_node("banana", new_node("apple", new_node("date", new_node("cherry", NULL))));
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(is_sorted(list));
+    assert(list_len(list) == 4);
+    free_list(list);
+
+    // two elements out of order
+    list = new_node("z", new_node("a", NULL));
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(strcmp(list->data, "a") == 0);
+    assert(strcmp(list->next->data, "z") == 0);
+    free_list(list);
+
+    // duplicates
+    list = new_node("b", new_node("a", new_node("b", NULL)));
+    ft_list_sort(&list, (int (*)(void*, void*))ft_strcmp);
+    assert(is_sorted(list));
+    assert(list_len(list) == 3);
+    free_list(list);
+
+    printf("ft_list_sort GOOD\n");
 }
 #endif
 
@@ -324,5 +391,6 @@ int main(void)
     test_ft_atoi_base();
     test_ft_list_push_front();
     test_ft_list_size();
+    test_ft_list_sort();
 #endif
 }
